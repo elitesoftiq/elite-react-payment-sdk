@@ -7,6 +7,17 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { tanstackQueryClient } from './sdk/lib/react-query';
 import { Button } from './components/ui/button';
 import { getSavedCards } from './sdk/services/cards';
+import {
+  createBrowserRouter,
+  RouterProvider,
+} from "react-router";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <PaymentTestForm />,
+  },
+]);
 
 
 function App() {
@@ -31,12 +42,8 @@ function App() {
         }}
       /> */}
 <QueryClientProvider client={tanstackQueryClient}>
-<PaymentTestForm /> 
-<Button variant="secondary" onClick={() => {
-  getSavedCards().then((res) => {
-    console.log(res);
-  });
-}}>Get Saved Cards</Button>
+  <RouterProvider router={router} />
+  {/* <PaymentTestForm />  */}
 </QueryClientProvider>
     </>
   )

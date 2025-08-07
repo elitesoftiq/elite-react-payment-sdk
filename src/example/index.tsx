@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useSearchParams } from 'react-router';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {z} from 'zod';
-import { Loader2, RefreshCw, CreditCard } from 'lucide-react';
+import { Loader2, RefreshCw, CreditCard, Wallet, AlertCircle, CheckCircle } from 'lucide-react';
 
 import { getPaymentTokenRequest, paymentLogin } from '../sdk/services/paymentInit';
 import { Button } from '@/components/ui/button';
@@ -33,6 +34,8 @@ import {
 } from '@/components/ui/card';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import httpClient from '@/sdk/lib/http-client';
+import { PaymentDialog } from './paymentDialog';
+import { getGatewayOrderData } from '@/sdk/services/payment';
 
 const formSchema = z.object({
   username: z.string().min(1, { message: "Username is required" }),
@@ -51,10 +54,21 @@ const currencies = [
 ];
 
 export const PaymentTestForm: React.FC = () => {
+    const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+    const [searchParams] = useSearchParams();
+    const orderId = searchParams.get('orderId');
+
+    const {data: gatewayOrderData, isPending: isPendingGatewayOrderData, isError: isErrorGatewayOrderData} = useQuery({
+        queryKey: ['gatewayOrderData'],
+        queryFn: () => getGatewayOrderData(orderId ?? ''),
+        enabled: !!orderId,
+    });
+
     const {mutate: mutateGetPaymentTokenRequest} = useMutation({
         mutationFn: (data: any) => getPaymentTokenRequest(data, data.tenant),
         onSuccess: (data: any) => {
             httpClient.defaults.headers.common['Authorization'] = `Bearer ${data.data.access_token}`;
+            setIsPaymentDialogOpen(true);
         },
         onError: (error) => {
             console.log(error);
@@ -105,6 +119,25 @@ export const PaymentTestForm: React.FC = () => {
             </CardDescription>
           </CardHeader>
         </Card>
+
+        {isPendingGatewayOrderData && (
+          <div className="flex justify-center items-center">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Checking payment status...
+          </div>
+        )}
+        {isErrorGatewayOrderData && (
+          <div className="flex justify-center items-center">
+            <AlertCircle className="h-4 w-4 animate-spin" />
+            Error checking payment status: {gatewayOrderData?.data?.message}
+          </div>
+        )}
+        {gatewayOrderData?.data?.orderStatus === 'Deposited' && (
+          <div className="flex justify-center items-center">
+            <CheckCircle className="h-4 w-4 animate-spin" />
+            Payment successful
+          </div>
+        )}
 
         {/* Main Form Card */}
         <Card>
@@ -269,11 +302,31 @@ export const PaymentTestForm: React.FC = () => {
                     Reset Form
                   </Button>
                 </div>
+
               </form>
             </Form>
           </CardContent>
         </Card>
 
+                {/* Payment Dialog Button */}
+                <div className="border-t pt-6">
+                    <PaymentDialog
+                      amount={form.watch('amount')}
+                      currency={form.watch('currency')}
+                      open={isPaymentDialogOpen}
+                      onOpenChange={setIsPaymentDialogOpen}
+                      trigger={
+                        <Button 
+                          type="button" 
+                          className="w-full h-12 text-lg"
+                          disabled={!form.watch('amount') || !form.watch('currency')}
+                        >
+                          <Wallet className="mr-2 h-5 w-5" />
+                          Start Payment Flow
+                        </Button>
+                      }
+                    />
+                  </div>
         {/* Results Section */}
         {(data || error) && (
           <Card>
