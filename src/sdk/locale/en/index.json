@@ -1,0 +1,18 @@
+{
+    "confirmPayment": "Confirm Payment",
+    "paymentSummary": "Payment Summary",
+    "items": "Items",
+    "discounts": "Discounts",
+    "serviceFees": "Service Fees",
+    "saveCard": "Save Card",
+    "skipFido": "Skip FIDO",
+    "email": "Email",
+    "phone": "Phone",
+    "cardInformation": "Card Information",
+    "cardHolderName": "Cardholder Name",
+    "cardHolderNamePlaceholder": "Enter cardholder name",
+    "cardNumber": "Card Number",
+    "expiryMonth": "Month",
+    "expiryYear": "Year",
+    "cvv": "CVV"
+}

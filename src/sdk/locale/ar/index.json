@@ -1,0 +1,18 @@
+{
+    "confirmPayment": "تأكيد الدفع",
+    "paymentSummary": "ملخص الدفع",
+    "items": "العناصر",
+    "discounts": "الخصومات",
+    "serviceFees": "الرسوم الخدمية",
+    "saveCard": "حفظ البطاقة",
+    "skipFido": "تخطي FIDO",
+    "email": "البريد الإلكتروني",
+    "phone": "الهاتف",
+    "cardInformation": "معلومات البطاقة",
+    "cardHolderName": "اسم حامل البطاقة",
+    "cardHolderNamePlaceholder": "ادخل اسم حامل البطاقة",
+    "cardNumber": "رقم البطاقة",
+    "expiryMonth": "الشهر",
+    "expiryYear": "السنة",
+    "cvv": "رمز الأمان"
+}
