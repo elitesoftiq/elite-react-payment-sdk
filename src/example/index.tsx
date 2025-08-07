@@ -32,6 +32,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import httpClient from '@/sdk/lib/http-client';
 
 const formSchema = z.object({
   username: z.string().min(1, { message: "Username is required" }),
@@ -52,6 +53,12 @@ const currencies = [
 export const PaymentTestForm: React.FC = () => {
     const {mutate: mutateGetPaymentTokenRequest} = useMutation({
         mutationFn: (data: any) => getPaymentTokenRequest(data, data.tenant),
+        onSuccess: (data: any) => {
+            httpClient.defaults.headers.common['Authorization'] = `Bearer ${data.data.access_token}`;
+        },
+        onError: (error) => {
+            console.log(error);
+        },
     });
 
   const form = useForm<PaymentTestFormData>({
@@ -68,7 +75,7 @@ export const PaymentTestForm: React.FC = () => {
   const { mutate, isPending, error, data  } = useMutation({
       mutationFn: (values: PaymentTestFormData) => paymentLogin(values, values.tenant),
       onSuccess: (data: any) => {
-          mutateGetPaymentTokenRequest({clientAccessToken: data.access_token, clientId: form.watch('clientId'), tenant: form.watch('tenant')});
+          mutateGetPaymentTokenRequest({clientAccessToken: data.data.access_token, clientId: form.watch('clientId'), tenant: form.watch('tenant')});
       },
       onError: (error) => {
           console.log(error);
