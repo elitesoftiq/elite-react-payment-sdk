@@ -67,9 +67,9 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({
     mutationFn: (paymentData: PaymentFlowData) => createPaymentRequest(paymentData),
     onSuccess: (response) => {
       // Redirect to payment gateway
-    //   if (response.data?.paymentForm) {
-    //     window.location.href = response.data.paymentForm;
-    //   }
+      if (response.data?.paymentForm) {
+        window.location.href = response.data.paymentForm;
+      }
     },
     onError: (error) => {
       console.error('Payment failed:', error);
