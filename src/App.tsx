@@ -2,11 +2,8 @@
 import './App.css'
 import './assets/scss/styles.scss'
 import { PaymentTestForm } from './example';
-import { WebPaymentSDK } from './sdk'
 import { QueryClientProvider } from '@tanstack/react-query';
 import { tanstackQueryClient } from './sdk/lib/react-query';
-import { Button } from './components/ui/button';
-import { getSavedCards } from './sdk/services/cards';
 import {
   createBrowserRouter,
   RouterProvider,

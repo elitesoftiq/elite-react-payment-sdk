@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { useSearchParams } from 'react-router';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {z} from 'zod';
-import { Loader2, RefreshCw, CreditCard, AlertCircle, CheckCircle, Wallet } from 'lucide-react';
+import { Loader2, RefreshCw, CreditCard, AlertCircle, CheckCircle } from 'lucide-react';
 
 import { getPaymentTokenRequest, paymentLogin } from '../sdk/services/paymentInit';
 import { Button } from '@/components/ui/button';
