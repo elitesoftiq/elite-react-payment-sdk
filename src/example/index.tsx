@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { useSearchParams } from 'react-router';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {z} from 'zod';
-import { Loader2, RefreshCw, CreditCard, Wallet, AlertCircle, CheckCircle } from 'lucide-react';
+import { Loader2, RefreshCw, CreditCard, AlertCircle, CheckCircle } from 'lucide-react';
 
 import { getPaymentTokenRequest, paymentLogin } from '../sdk/services/paymentInit';
 import { Button } from '@/components/ui/button';
@@ -34,7 +34,9 @@ import {
 } from '@/components/ui/card';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import httpClient from '@/sdk/lib/http-client';
-import { PaymentDialog } from './paymentDialog';
+// import { PaymentDialog } from './paymentDialog';
+import { SubscriptionDialog } from './subscriptionDialog';
+import { UserSubscriptionsDialog } from './userSubscriptionsDialog';
 import { getGatewayOrderData } from '@/sdk/services/payment';
 
 const formSchema = z.object({
@@ -54,12 +56,15 @@ const currencies = [
 ];
 
 export const PaymentTestForm: React.FC = () => {
-    const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+    // const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+    const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
+    const [nextDialog, setNextDialog] = useState<'payment' | 'subscription' | null>(null);
+    const [isUserSubscriptionsDialogOpen, setIsUserSubscriptionsDialogOpen] = useState(false);
     const [searchParams] = useSearchParams();
     const orderId = searchParams.get('orderId');
 
-    const {data: gatewayOrderData, isPending: isPendingGatewayOrderData, isError: isErrorGatewayOrderData} = useQuery({
-        queryKey: ['gatewayOrderData'],
+    const {data: gatewayOrderData, fetchStatus, isPending: isPendingGatewayOrderData, isError: isErrorGatewayOrderData, refetch: refetchGatewayOrderData} = useQuery({
+        queryKey: ['gatewayOrderData', orderId],
         queryFn: () => getGatewayOrderData(orderId ?? ''),
         enabled: !!orderId,
     });
@@ -68,7 +73,9 @@ export const PaymentTestForm: React.FC = () => {
         mutationFn: (data: any) => getPaymentTokenRequest(data, data.tenant),
         onSuccess: (data: any) => {
             httpClient.defaults.headers.common['Authorization'] = `Bearer ${data.data.access_token}`;
-            setIsPaymentDialogOpen(true);
+            if (nextDialog === 'subscription') {
+              setIsSubscriptionDialogOpen(true);
+            }
         },
         onError: (error) => {
             console.log(error);
@@ -97,13 +104,14 @@ export const PaymentTestForm: React.FC = () => {
   });
 
   const onSubmit = async (values: PaymentTestFormData) => {
+    setNextDialog('payment');
     mutate(values);
   };
 
   const resetForm = () => {
     form.reset();
   };
-
+  
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="mx-auto max-w-4xl space-y-6">
@@ -120,7 +128,7 @@ export const PaymentTestForm: React.FC = () => {
           </CardHeader>
         </Card>
 
-        {isPendingGatewayOrderData && (
+        {fetchStatus === 'fetching' && (
           <div className="flex justify-center items-center">
             <Loader2 className="h-4 w-4 animate-spin" />
             Checking payment status...
@@ -294,6 +302,22 @@ export const PaymentTestForm: React.FC = () => {
                   <Button
                     type="button"
                     variant="secondary"
+                    onClick={() => { setNextDialog('subscription'); mutate(form.getValues()); }}
+                    disabled={isPending}
+                    className="flex-1"
+                  >
+                    {isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Testing Initialization...
+                      </>
+                    ) : (
+                      'Test Initialize Subscription'
+                    )}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
                     onClick={resetForm}
                     disabled={isPending}
                     className="flex-shrink-0"
@@ -309,7 +333,7 @@ export const PaymentTestForm: React.FC = () => {
         </Card>
 
                 {/* Payment Dialog Button */}
-                <div className="border-t pt-6">
+                {/* <div className="border-t pt-6">
                     <PaymentDialog
                       amount={form.watch('amount')}
                       currency={form.watch('currency')}
@@ -326,7 +350,38 @@ export const PaymentTestForm: React.FC = () => {
                         </Button>
                       }
                     />
-                  </div>
+                </div> */}
+
+                {/* Subscription Dialog Button */}
+                <div className="border-t pt-6">
+                    <SubscriptionDialog
+                      open={isSubscriptionDialogOpen}
+                      onOpenChange={setIsSubscriptionDialogOpen}
+                      trigger={
+                        <Button 
+                          type="button" 
+                          className="w-full h-12 text-lg"
+                        >
+                          View Subscription Products
+                        </Button>
+                      }
+                    />
+                </div>
+                {/* User Subscriptions Dialog Button */}
+                <div className="pt-3">
+                  <UserSubscriptionsDialog
+                    open={isUserSubscriptionsDialogOpen}
+                    onOpenChange={setIsUserSubscriptionsDialogOpen}
+                    trigger={
+                      <Button
+                        type="button"
+                        className="w-full h-12 text-lg"
+                      >
+                        View My Subscriptions
+                      </Button>
+                    }
+                  />
+                </div>
         {/* Results Section */}
         {(data || error) && (
           <Card>

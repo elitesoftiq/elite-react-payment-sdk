@@ -249,7 +249,7 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({
       trigger={trigger}
       open={open}
       setOpen={onOpenChange}
-      widthClassName="w-[400px] max-w-[90vw]"
+      widthClassName="w-[400px] max-w-[90vw] overflow-y-auto"
     >
       {getDialogContent()}
     </DrawerDialogDemo>
