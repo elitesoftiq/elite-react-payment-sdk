@@ -11,8 +11,7 @@ export const paymentLogin = async (data: any, tenant: string) => {
         "username": data.username,
         "password": data.password,
         "client_id": data.clientId,
-        // "client_secret": "019d7fb9-7c8d-436e-bd67-d8ce26d1902a",
-        projectId: "3a1b3fa9-9429-7b9c-9dc3-586e128ca8f0",
+        projectId: data.projectId,
         scope: "openid profile email roles offline_access PaymentSdk",
     });
     
@@ -29,7 +28,7 @@ export const getPaymentTokenRequest = async (data: any, tenant: string) => {
         "token": data.clientAccessToken,
         "client_id": data.clientId,
         "grant_type": "JwtAssertedExtensionGrant",
-        projectId: "3a1b3fa9-9429-7b9c-9dc3-586e128ca8f0",
+        projectId: data.projectId,
         scope: "openid profile email roles offline_access PaymentSdk",
     });
     

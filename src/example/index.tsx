@@ -3,19 +3,12 @@ import { useForm } from 'react-hook-form';
 import { useSearchParams } from 'react-router';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {z} from 'zod';
-import { Loader2, RefreshCw, CreditCard, AlertCircle, CheckCircle } from 'lucide-react';
+import { Loader2, RefreshCw, CreditCard, AlertCircle, CheckCircle, Wallet } from 'lucide-react';
 
 import { getPaymentTokenRequest, paymentLogin } from '../sdk/services/paymentInit';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   Form,
   FormControl,
@@ -38,32 +31,28 @@ import httpClient from '@/sdk/lib/http-client';
 import { SubscriptionDialog } from './subscriptionDialog';
 import { UserSubscriptionsDialog } from './userSubscriptionsDialog';
 import { getGatewayOrderData } from '@/sdk/services/payment';
+import { PaymentDialog } from './paymentDialog';
 
 const formSchema = z.object({
   username: z.string().min(1, { message: "Username is required" }),
   password: z.string().min(1, { message: "Password is required" }),
   clientId: z.string().min(1, { message: "Client ID is required" }),
   tenant: z.string().min(1, { message: "Tenant is required" }),
-  amount: z.string().min(0.01, { message: "Amount must be greater than 0" }),
-  currency: z.string().min(1, { message: "Currency is required" }),
+  projectId: z.string().min(1, { message: "Project ID is required" }),
 });
 
 type PaymentTestFormData = z.infer<typeof formSchema>;
 
-const currencies = [
-  { value: "USD", label: "USD - US Dollar" },
-  { value: "IQD", label: "IQD - Iraqi Dinar" },
-];
 
 export const PaymentTestForm: React.FC = () => {
-    // const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+    const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
     const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
     const [nextDialog, setNextDialog] = useState<'payment' | 'subscription' | null>(null);
     const [isUserSubscriptionsDialogOpen, setIsUserSubscriptionsDialogOpen] = useState(false);
     const [searchParams] = useSearchParams();
     const orderId = searchParams.get('orderId');
 
-    const {data: gatewayOrderData, fetchStatus, isPending: isPendingGatewayOrderData, isError: isErrorGatewayOrderData, refetch: refetchGatewayOrderData} = useQuery({
+    const {data: gatewayOrderData, fetchStatus, isError: isErrorGatewayOrderData} = useQuery({
         queryKey: ['gatewayOrderData', orderId],
         queryFn: () => getGatewayOrderData(orderId ?? ''),
         enabled: !!orderId,
@@ -73,8 +62,12 @@ export const PaymentTestForm: React.FC = () => {
         mutationFn: (data: any) => getPaymentTokenRequest(data, data.tenant),
         onSuccess: (data: any) => {
             httpClient.defaults.headers.common['Authorization'] = `Bearer ${data.data.access_token}`;
+            httpClient.defaults.headers.common['__projectId'] = form.watch('projectId');
             if (nextDialog === 'subscription') {
               setIsSubscriptionDialogOpen(true);
+            }
+            if (nextDialog === 'payment') {
+              setIsPaymentDialogOpen(true);
             }
         },
         onError: (error) => {
@@ -89,8 +82,7 @@ export const PaymentTestForm: React.FC = () => {
       password: '',
       clientId: '',
       tenant: '',
-      amount: "",
-      currency: '',
+      projectId: '',
     },
   });
   const { mutate, isPending, error, data  } = useMutation({
@@ -227,69 +219,31 @@ export const PaymentTestForm: React.FC = () => {
                         </FormItem>
                       )}
                     />
+                    <FormField
+                      control={form.control}
+                      name="projectId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Project ID</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter project ID" {...field} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </div>
 
-                {/* Payment Information Section */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Payment Information</h3>
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <FormField
-                      control={form.control}
-                      name="amount"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Amount</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              placeholder="Enter amount"
-                              {...field}
-                              onChange={(e) => field.onChange(e.target.value)}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Payment amount in the selected currency
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="currency"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Currency</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select currency" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {currencies.map((currency) => (
-                                <SelectItem key={currency.value} value={currency.value}>
-                                  {currency.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>
-                            Currency for the payment transaction
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
 
                 {/* Action Buttons */}
                 <div className="flex flex-col gap-3 pt-6 sm:flex-row">
-                  <Button type="submit" variant="secondary" disabled={isPending} className="flex-1">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => { setNextDialog('payment'); mutate(form.getValues()); }}
+                    disabled={isPending}
+                    className="flex-1"
+                  >
                     {isPending ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -333,24 +287,12 @@ export const PaymentTestForm: React.FC = () => {
         </Card>
 
                 {/* Payment Dialog Button */}
-                {/* <div className="border-t pt-6">
+                <div className="border-t pt-6">
                     <PaymentDialog
-                      amount={form.watch('amount')}
-                      currency={form.watch('currency')}
                       open={isPaymentDialogOpen}
                       onOpenChange={setIsPaymentDialogOpen}
-                      trigger={
-                        <Button 
-                          type="button" 
-                          className="w-full h-12 text-lg"
-                          disabled={!form.watch('amount') || !form.watch('currency')}
-                        >
-                          <Wallet className="mr-2 h-5 w-5" />
-                          Start Payment Flow
-                        </Button>
-                      }
                     />
-                </div> */}
+                </div>
 
                 {/* Subscription Dialog Button */}
                 <div className="border-t pt-6">

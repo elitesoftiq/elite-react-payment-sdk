@@ -2,7 +2,7 @@ import React from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { DrawerDialogDemo } from '@/components/ui/DialogDrawer';
 import { Card, CardContent } from '@/components/ui/card';
-import { cancelSubscription, getUserSubscriptions, reEnableSubscription, reSubscribeToProduct } from '@/sdk/services/subscription';
+import { cancelSubscription, getUserSubscriptions, reEnableSubscription } from '@/sdk/services/subscription';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -162,6 +162,7 @@ export const UserSubscriptionsDialog: React.FC<UserSubscriptionsDialogProps> = (
                         size="sm"
                         variant="outline"
                         onClick={() => mutateReEnable(sub.id)}
+                        disabled={isReEnabling}
                       >
                         Re-Enable
                       </Button>

@@ -22,7 +22,7 @@ export function DrawerDialogDemo({
     widthClassName = 'w-[400px] max-w-[600px]',
 }: {
     title?: string;
-    trigger: React.ReactNode;
+    trigger?: React.ReactNode;
     children: React.ReactNode;
     open: boolean;
     setOpen: (open: boolean) => void;
@@ -43,7 +43,7 @@ export function DrawerDialogDemo({
     if (isDesktop) {
         return (
             <Dialog open={open} onOpenChange={handleApplyFilters}>
-                <DialogTrigger asChild>{trigger}</DialogTrigger>
+                {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
                 <DialogContent
                     dir={i18n.dir()}
                     aria-describedby={''}
@@ -66,7 +66,7 @@ export function DrawerDialogDemo({
 
     return (
         <Drawer open={open} onOpenChange={handleApplyFilters}>
-            <DrawerTrigger asChild>{trigger}</DrawerTrigger>
+            {trigger && <DrawerTrigger asChild>{trigger}</DrawerTrigger>}
             <DrawerContent className="p-4 w-[100vw] max-h-[80vh] px-0">{children}</DrawerContent>
         </Drawer>
     );

@@ -10,7 +10,6 @@ export const makeCredentialOptions = async (): Promise<{ data: MakeCredentialOpt
     }
     const headers = {
         "Content-Type": "application/x-www-form-urlencoded",
-        "__projectId": "3a1b3fa9-9429-7b9c-9dc3-586e128ca8f0",
     }
     return await httpClient.post('/webauthn/makeCredentialOptions', data, { headers });
 }
@@ -38,11 +37,7 @@ export const makeCredential = async (
         },
     };
 
-    const headers = {
-        "__projectId": "3a1b3fa9-9429-7b9c-9dc3-586e128ca8f0",
-    };
-
-    return await httpClient.post('/webauthn/makeCredential', attestation, { headers });
+    return await httpClient.post('/webauthn/makeCredential', attestation);
 }
 
 // Helper function to create WebAuthn credential based on Flutter logic

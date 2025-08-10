@@ -10,30 +10,62 @@ import { OtpVerification } from '@/sdk/components/OtpVerification';
 import type { SavedCard, PaymentFlowData } from '@/sdk/types';
 import { makeCredentialOptions } from '@/sdk/services/passkeyService';
 import type { MakeCredentialOptions } from '@/sdk/types';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 type PaymentStep = 'card-selection' | 'otp-verification' | 'success';
+const currencies = [
+  { value: "USD", label: "USD - US Dollar" },
+  { value: "IQD", label: "IQD - Iraqi Dinar" },
+];
 
+
+ const formSchema = z.object({
+  amount: z.string().min(0.01, { message: "Amount must be greater than 0" }),
+  currency: z.string().min(1, { message: "Currency is required" }),
+ });
+
+ type PaymentDialogFormData = z.infer<typeof formSchema>;
 interface PaymentDialogProps {
-  amount: string;
-  currency: string;
   destination?: string;
   returnUrl?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  trigger: React.ReactNode;
 }
 
 export const PaymentDialog: React.FC<PaymentDialogProps> = ({
-  amount,
-  currency,
   destination,
   returnUrl,
   open,
   onOpenChange,
-  trigger,
 }) => {
   const [currentStep, setCurrentStep] = useState<PaymentStep>('card-selection');
   const [credentialOptions, setCredentialOptions] = useState<MakeCredentialOptions | null>(null);
+  const form = useForm<PaymentDialogFormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      amount: '',
+      currency: '',
+    },
+  });
   useEffect(() => {
     if (!open) {
       setCurrentStep('card-selection');
@@ -82,8 +114,8 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({
 
   const handleCardSelect = (card: SavedCard) => {
     const paymentData: PaymentFlowData = {
-      amount,
-      currency,
+      amount: form.watch('amount'),
+      currency: form.watch('currency'),
       destination,
       returnUrl,
       saveCard: false,
@@ -94,8 +126,8 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({
 
   const handleOtpSuccess = () => {
     const paymentData: PaymentFlowData = {
-      amount,
-      currency,
+      amount: form.watch('amount'),
+      currency: form.watch('currency'),
       destination,
       returnUrl,
       saveCard: true,
@@ -108,6 +140,7 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({
   };
 
   const formatAmount = (amount: string, currency: string) => {
+
     const numAmount = parseFloat(amount);
     
     // Validate currency - use IQD as fallback if currency is empty or invalid
@@ -133,10 +166,68 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({
       <div className="text-center space-y-2 border-b pb-6">
         <h2 className="text-2xl font-semibold">Payment Summary</h2>
         <div className="text-3xl font-bold text-blue-600">
-          {formatAmount(amount, currency)}
+          {form.watch('amount') && form.watch('currency') && formatAmount(form.watch('amount'), form.watch('currency'))}
         </div>
         <p className="text-gray-600">Select a payment method to continue</p>
       </div>
+
+                {/* Payment Information Section */}
+            <Form {...form}>
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium">Payment Information</h3>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <FormField
+                      control={form.control}
+                      name="amount"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Amount</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              placeholder="Enter amount"
+                              {...field}
+                              onChange={(e) => field.onChange(e.target.value)}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Payment amount in the selected currency
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="currency"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Currency</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select currency" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {currencies.map((currency) => (
+                                <SelectItem key={currency.value} value={currency.value}>
+                                  {currency.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>
+                            Currency for the payment transaction
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div></Form>
 
       {/* Add New Card Button */}
       <Button
@@ -246,7 +337,6 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({
   return (
     <DrawerDialogDemo
       title={getDialogTitle()}
-      trigger={trigger}
       open={open}
       setOpen={onOpenChange}
       widthClassName="w-[400px] max-w-[90vw] overflow-y-auto"
