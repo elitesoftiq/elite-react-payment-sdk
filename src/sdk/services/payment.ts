@@ -10,7 +10,6 @@ export const createPaymentRequest = async (paymentData: PaymentFlowData) => {
         amount: paymentData.amount,
         // TODO: Uncomment when currency is implemented
         // currency: paymentData.currency,
-        destination: paymentData.destination,
         cardTokenId: paymentData.cardTokenId,
     };
 

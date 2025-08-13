@@ -97,7 +97,6 @@ Props:
 
 - `open`: boolean — controlled dialog state
 - `onOpenChange(open: boolean)`: state setter
-- `destination?`: string — optional payment destination
 - `returnUrl?`: string — where the gateway redirects after payment
 
 Usage:
@@ -137,7 +136,6 @@ export const createPaymentRequest = async (paymentData: PaymentFlowData) => {
     saveCard: paymentData.saveCard,
     returnUrl: paymentData.returnUrl ?? window.location.origin,
     amount: paymentData.amount,
-    destination: paymentData.destination,
     cardTokenId: paymentData.cardTokenId,
   });
 };
@@ -193,7 +191,6 @@ Behavior:
 export interface PaymentFlowData {
   amount: string;
   currency: string; // currently optional on server side in example
-  destination?: string;
   returnUrl?: string;
   saveCard: boolean;
   cardTokenId?: string; // present when using saved card

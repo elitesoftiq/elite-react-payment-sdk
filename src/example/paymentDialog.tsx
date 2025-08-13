@@ -116,7 +116,6 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({
     const paymentData: PaymentFlowData = {
       amount: form.watch('amount'),
       currency: form.watch('currency'),
-      destination,
       returnUrl,
       saveCard: false,
       cardTokenId: card.cardTokenId,
@@ -128,7 +127,6 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({
     const paymentData: PaymentFlowData = {
       amount: form.watch('amount'),
       currency: form.watch('currency'),
-      destination,
       returnUrl,
       saveCard: true,
     };

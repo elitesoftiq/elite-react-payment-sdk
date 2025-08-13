@@ -26,7 +26,6 @@ export interface SavedCard {
 export interface PaymentFlowData {
   amount: string;
   currency: string;
-  destination?: string;
   returnUrl?: string;
   saveCard: boolean;
   cardTokenId?: string;
